@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IA - Asistente de Voz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 0;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .ai-card {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .mic-button {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: #667eea;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 2rem auto;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .mic-button:hover {
+            transform: scale(1.05);
+            background: #764ba2;
+        }
+
+        .mic-button:active {
+            transform: scale(0.95);
+        }
+
+        .mic-button.recording {
+            background: #f44336;
+            animation: pulse 1.5s infinite;
+        }
+
+        .mic-button.processing {
+            background: #ff9800;
+            cursor: not-allowed;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 10px 30px rgba(244, 67, 54, 0.5); }
+            50% { box-shadow: 0 10px 50px rgba(244, 67, 54, 0.8); }
+        }
+
+        .mic-icon {
+            font-size: 4rem;
+            color: white;
+        }
+
+        .status {
+            margin-top: 2rem;
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status.idle {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status.recording {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .status.processing {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .response {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #f5f5f5;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            text-align: left;
+            display: none;
+        }
+
+        .response.show {
+            display: block;
+        }
+
+        .response-label {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .response-text {
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .transcript {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #fff;
+            border-radius: 8px;
+            font-style: italic;
+            color: #666;
+        }
+
+        .error {
+            color: #c62828;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <div class="logo">🏠 Casa</div>
+            <ul class="nav-links">
+                <li><a href="/">Inicio</a></li>
+                <li><a href="/camaras">Cámaras</a></li>
+                <li><a href="/IA" class="active">IA</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="ai-card">
+            <h1>🤖 Asistente de Voz</h1>
+            <p class="subtitle">Presiona el micrófono y habla</p>
+
+            <button id="micButton" class="mic-button">
+                <span class="mic-icon">🎤</span>
+            </button>
+
+            <div id="status" class="status idle">
+                Presiona el micrófono para hablar
+            </div>
+
+            <div id="response" class="response">
+                <div class="response-label">Respuesta:</div>
+                <div id="responseText" class="response-text"></div>
+                <div id="transcript" class="transcript"></div>
+            </div>
+
+            <div id="error" class="error"></div>
+        </div>
+    </div>
+
+    <!-- Hidden audio element for playing response -->
+    <audio id="responseAudio" style="display: none;"></audio>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+
+        const micButton = document.getElementById('micButton');
+        const status = document.getElementById('status');
+        const responseDiv = document.getElementById('response');
+        const responseText = document.getElementById('responseText');
+        const transcript = document.getElementById('transcript');
+        const errorDiv = document.getElementById('error');
+        const responseAudio = document.getElementById('responseAudio');
+
+        micButton.addEventListener('click', toggleRecording);
+
+        async function toggleRecording() {
+            if (isRecording) {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        }
+
+        async function startRecording() {
+            try {
+                errorDiv.textContent = '';
+                responseDiv.classList.remove('show');
+
+                // Check if browser supports mediaDevices
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    errorDiv.textContent = 'Error: Tu navegador no soporta grabación de audio. Usa Chrome, Firefox o Edge actualizado, o accede via HTTPS.';
+                    return;
+                }
+
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    await sendAudioToServer(audioBlob);
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+
+                micButton.classList.add('recording');
+                status.className = 'status recording';
+                status.textContent = '🔴 Grabando... (presiona para detener)';
+
+            } catch (error) {
+                console.error('Error accessing microphone:', error);
+                errorDiv.textContent = 'Error: No se pudo acceder al micrófono';
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                isRecording = false;
+
+                micButton.classList.remove('recording');
+                micButton.classList.add('processing');
+                status.className = 'status processing';
+                status.textContent = '⏳ Procesando audio...';
+            }
+        }
+
+        async function sendAudioToServer(audioBlob) {
+            try {
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'recording.wav');
+
+                const response = await fetch('http://192.168.1.143:5000/api/process_voice', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                micButton.classList.remove('processing');
+                status.className = 'status idle';
+                status.textContent = 'Presiona el micrófono para hablar';
+
+                if (result.success) {
+                    // Show transcript
+                    transcript.textContent = `Escuché: "${result.transcript}"`;
+
+                    // Show response text
+                    responseText.textContent = result.response_text;
+                    responseDiv.classList.add('show');
+
+                    // Play audio response
+                    if (result.audio_file) {
+                        responseAudio.src = 'http://192.168.1.143:5000' + result.audio_file + '?t=' + Date.now();
+                        responseAudio.play();
+                    }
+                } else {
+                    errorDiv.textContent = 'Error: ' + result.error;
+                }
+
+            } catch (error) {
+                console.error('Error sending audio:', error);
+                errorDiv.textContent = 'Error al procesar el audio';
+
+                micButton.classList.remove('processing');
+                status.className = 'status idle';
+                status.textContent = 'Presiona el micrófono para hablar';
+            }
+        }
+    </script>
+</body>
+</html>
