@@ -27,8 +27,8 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(RESPONSE_FOLDER, exist_ok=True)
 
 # Spotify Configuration
-SPOTIPY_CLIENT_ID = '75c4ed30249147ada9921b6fbf1aa7e7'
-SPOTIPY_CLIENT_SECRET = 'e657ca2cbb42457a909f896c4356f16e'
+SPOTIPY_CLIENT_ID = ''
+SPOTIPY_CLIENT_SECRET = ''
 SPOTIPY_REDIRECT_URI = 'http://127.0.0.1:8888/callback'
 
 # Initialize Spotify client
