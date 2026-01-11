@@ -1,6 +1,6 @@
 # 🏠 Smart Home System
 
-A complete smart home automation system built with Flask, ESP32, and modern web technologies. Control lights, monitor cameras, interact with voice commands, and integrate with Spotify - this is controlled by web interface. The final objective of this project is to control most devices in the house from voice commands or using the phone while minimizing the amount of data sent to companies.
+A complete smart home automation system built with Flask, ESP32, and modern web technologies. Control lights, monitor cameras, interact with voice commands, and integrate with Spotify - this is controlled by web interface. The final objective of this project is to control most devices in the house using either voice commands or the phone while minimizing the amount of data sent to companies.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.8+-green.svg)
