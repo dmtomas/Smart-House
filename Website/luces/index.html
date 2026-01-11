@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luces - Control de Iluminación</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .nav-links a.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .container {
+            flex: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .controls-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .master-control {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .master-btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .master-btn.all-on {
+            background: white;
+            color: #667eea;
+        }
+
+        .master-btn.all-on:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255,255,255,0.3);
+        }
+
+        .master-btn.all-off {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .master-btn.all-off:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .summary-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .lights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .light-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .light-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .light-card.off {
+            background: rgba(149, 165, 166, 0.95);
+        }
+
+        .light-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .light-info h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.3rem;
+            transition: color 0.3s ease;
+        }
+
+        .light-card.on .light-info h3 {
+            color: #667eea;
+        }
+
+        .light-card.off .light-info h3 {
+            color: #7f8c8d;
+        }
+
+        .light-location {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+
+        .light-header-right {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: flex-end;
+        }
+
+        .delete-btn {
+            background: #e74c3c;
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background: #c0392b;
+            transform: scale(1.1);
+        }
+
+        .light-icon {
+            font-size: 2.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .light-card.on .light-icon {
+            filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+        }
+
+        .light-card.off .light-icon {
+            filter: grayscale(100%) brightness(0.6);
+        }
+
+        .light-toggle {
+            width: 100%;
+            height: 60px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .light-toggle::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .light-toggle:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .light-card.on .light-toggle {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .light-card.off .light-toggle {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .light-toggle:hover {
+            transform: scale(1.02);
+        }
+
+        .light-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+
+        .add-light-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 3px dashed rgba(255, 255, 255, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-light-card:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .add-light-icon {
+            font-size: 4rem;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .add-light-text {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .lights-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .controls-header {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <div class="logo">🏠 Casa</div>
+            <ul class="nav-links">
+                <li><a href="/">Inicio</a></li>
+                <li><a href="/camaras">Cámaras</a></li>
+                <li><a href="/luces" class="active">Luces</a></li>
+                <li><a href="/IA">IA</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1>💡 Control de Luces</h1>
+            <p>Gestiona la iluminación por zonas</p>
+        </div>
+
+        <div class="controls-header">
+            <div class="master-control">
+                <button class="master-btn all-on" onclick="toggleAllLights(true)">
+                    💡 Encender Todas
+                </button>
+                <button class="master-btn all-off" onclick="toggleAllLights(false)">
+                    🌙 Apagar Todas
+                </button>
+                <button class="master-btn all-on" onclick="reloadFromServer()">
+                    🔄 Actualizar
+                </button>
+            </div>
+        </div>
+
+        <div class="stats-summary">
+            <div class="summary-card">
+                <div class="summary-value" id="totalLights">0</div>
+                <div class="summary-label">Total de Luces</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-value" id="lightsOn">0</div>
+                <div class="summary-label">Encendidas</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-value" id="lightsOff">0</div>
+                <div class="summary-label">Apagadas</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-value" id="energySaved">0%</div>
+                <div class="summary-label">Energía Ahorrada</div>
+            </div>
+        </div>
+
+        <div class="lights-grid" id="lightsGrid">
+            <!-- Lights will be dynamically added here -->
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://192.168.1.143:5000/api/lights';
+
+        // Default lights configuration
+        const defaultLights = [
+        ];
+
+        let lights = [];
+
+        // Initialize lights from server first, then localStorage as backup
+        async function initLights() {
+            console.log('Initializing lights...');
+
+            try {
+                const response = await fetch(API_URL);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Server response:', data);
+
+                    if (data.success && data.lights && Object.keys(data.lights).length > 0) {
+                        // Convert server object to array
+                        lights = Object.values(data.lights);
+                        console.log('Loaded from server:', lights.length, 'lights');
+                    } else {
+                        console.log('Server empty, using defaults');
+                        lights = [...defaultLights];
+                        await syncWithBackend();
+                    }
+                } else {
+                    console.log('Server error, using defaults');
+                    lights = [...defaultLights];
+                }
+            } catch (error) {
+                console.log('Server unavailable, using defaults:', error.message);
+                lights = [...defaultLights];
+            }
+
+            // Also save to localStorage as backup
+            localStorage.setItem('lights', JSON.stringify(lights));
+
+            renderLights();
+            updateStats();
+        }
+
+        // Save lights to storage AND sync with backend
+        function saveLights() {
+            localStorage.setItem('lights', JSON.stringify(lights));
+            syncWithBackend();
+        }
+
+        // Sync lights state with backend
+        async function syncWithBackend() {
+            try {
+                const lightsObj = {};
+                lights.forEach(light => {
+                    lightsObj[light.id] = {
+                        id: light.id,
+                        name: light.name,
+                        location: light.location,
+                        icon: light.icon || '💡',
+                        state: light.state
+                    };
+                });
+
+                const response = await fetch(`${API_URL}/sync`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ lights: lightsObj })
+                });
+
+                if (response.ok) {
+                    console.log('Synced with backend');
+                } else {
+                    console.log('Sync failed:', response.status);
+                }
+            } catch (error) {
+                console.log('Backend sync error:', error.message);
+            }
+        }
+
+        // Reload lights from server
+        async function reloadFromServer() {
+            try {
+                const response = await fetch(API_URL);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.lights) {
+                        lights = Object.values(data.lights);
+                        localStorage.setItem('lights', JSON.stringify(lights));
+                        renderLights();
+                        updateStats();
+                        console.log('Reloaded from server');
+                        return;
+                    }
+                }
+                alert('No se pudo conectar al servidor');
+            } catch (error) {
+                console.error('Error reloading:', error);
+                alert('Error al actualizar: ' + error.message);
+            }
+        }
+
+        // Render all lights
+        function renderLights() {
+            const grid = document.getElementById('lightsGrid');
+            grid.innerHTML = '';
+
+            if (lights.length === 0) {
+                const noLights = document.createElement('div');
+                noLights.style.gridColumn = '1 / -1';
+                noLights.style.textAlign = 'center';
+                noLights.style.color = 'white';
+                noLights.style.fontSize = '1.2rem';
+                noLights.style.padding = '2rem';
+                noLights.innerHTML = 'No hay luces configuradas. Presiona el botón 🔄 Actualizar o agrega una nueva luz.';
+                grid.appendChild(noLights);
+            } else {
+                lights.forEach(light => {
+                    const card = createLightCard(light);
+                    grid.appendChild(card);
+                });
+            }
+
+            // Add "add new light" card
+            const addCard = document.createElement('div');
+       //     addCard.className = 'light-card add-light-card';
+       //     addCard.innerHTML = `
+       //         <div class="add-light-icon">➕</div>
+       //         <div class="add-light-text">Agregar Luz</div>
+       //     `;
+       //     addCard.onclick = addNewLight;
+            grid.appendChild(addCard);
+        }
+
+        // Create individual light card
+        function createLightCard(light) {
+            const card = document.createElement('div');
+            card.className = `light-card ${light.state ? 'on' : 'off'}`;
+            card.id = `light-${light.id}`;
+
+            card.innerHTML = `
+                <div class="light-header">
+                    <div class="light-info">
+                        <h3>${light.name}</h3>
+                        <h5>${light.id}</h5>
+                        <div class="light-location">${light.location}</div>
+                    </div>
+                    <div class="light-header-right">
+                        <button class="delete-btn" title="Eliminar luz">✕</button>
+                        <div class="light-icon">${light.icon}</div>
+                    </div>
+                </div>
+                <button class="light-toggle">
+                    ${light.state ? 'ENCENDIDO' : 'APAGADO'}
+                </button>
+                <div class="light-stats">
+                    <span>Estado: ${light.state ? 'ON' : 'OFF'}</span>
+                    <span>Zona: ${light.location.replace('📍 ', '')}</span>
+                </div>
+            `;
+
+            // Add event listeners
+            const toggleBtn = card.querySelector('.light-toggle');
+            toggleBtn.addEventListener('click', () => toggleLight(light.id));
+
+            const deleteBtn = card.querySelector('.delete-btn');
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                deleteLight(light.id);
+            });
+
+            return card;
+        }
+
+        // Toggle individual light
+        function toggleLight(id) {
+            const light = lights.find(l => l.id === id);
+            if (light) {
+                light.state = !light.state;
+                saveLights();
+                renderLights();
+                updateStats();
+            }
+        }
+
+        // Toggle all lights
+        function toggleAllLights(state) {
+            lights.forEach(light => {
+                light.state = state;
+            });
+            saveLights();
+            renderLights();
+            updateStats();
+        }
+
+        // Update statistics
+        function updateStats() {
+            const total = lights.length;
+            const on = lights.filter(l => l.state).length;
+            const off = total - on;
+            const energySaved = total > 0 ? Math.round((off / total) * 100) : 0;
+
+            document.getElementById('totalLights').textContent = total;
+            document.getElementById('lightsOn').textContent = on;
+            document.getElementById('lightsOff').textContent = off;
+            document.getElementById('energySaved').textContent = energySaved + '%';
+        }
+
+        // Add new light
+        function addNewLight() {
+            const name = prompt('Nombre de la luz:');
+            if (!name) return;
+
+            const location = prompt('Ubicación (ej: Planta Baja, Exterior):');
+            if (!location) return;
+
+            const newLight = {
+                id: 'light-' + Date.now(),
+                name: name,
+                location: '📍 ' + location,
+                icon: '💡',
+                state: false
+            };
+
+            lights.push(newLight);
+            saveLights();
+            renderLights();
+            updateStats();
+        }
+
+        // Delete light
+        function deleteLight(id) {
+            if (!confirm('¿Estás seguro de eliminar esta luz?')) {
+                return;
+            }
+
+            lights = lights.filter(light => light.id !== id);
+            saveLights();
+            renderLights();
+            updateStats();
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', initLights);
+    </script>
+</body>
+</html>
