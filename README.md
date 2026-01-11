@@ -1,4 +1,4 @@
-# 🏠 Casa - Smart Home System
+# 🏠 Smart Home System
 
 A complete smart home automation system built with Flask, ESP32, and modern web technologies. Control lights, monitor cameras, interact with voice commands, and integrate with Spotify - this is controlled by web interface. The final objective of this project is to control most devices in the house from voice commands or using the phone while minimizing the amount of data sent to companies.
 
