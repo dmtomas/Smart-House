@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cámaras - Sistema de Vigilancia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .nav-links a.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .container {
+            flex: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #999;
+            font-size: 1.1rem;
+        }
+
+        .camera-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .camera-card {
+            background: #2a2a2a;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .camera-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        .camera-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .camera-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4caf50;
+            animation: pulse-green 2s infinite;
+        }
+
+        .status-indicator.offline {
+            background: #f44336;
+            animation: none;
+        }
+
+        @keyframes pulse-green {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .camera-view {
+            position: relative;
+            background: #000;
+            aspect-ratio: 16/9;
+            overflow: hidden;
+        }
+
+        .camera-view iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .camera-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+
+        .camera-placeholder-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .camera-controls {
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #222;
+        }
+
+        .control-btn {
+            background: #667eea;
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+
+        .control-btn:disabled {
+            background: #444;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .fullscreen-btn {
+            background: transparent;
+            border: 2px solid #667eea;
+            color: #667eea;
+        }
+
+        .fullscreen-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .stats {
+            display: flex;
+            gap: 1rem;
+            color: #999;
+            font-size: 0.85rem;
+        }
+
+        .recording-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #f44336;
+        }
+
+        .recording-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #f44336;
+            animation: pulse-red 1s infinite;
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        @media (max-width: 1200px) {
+            .camera-grid {
+                grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .camera-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        /* Motion Alert Notification */
+        .motion-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #f44336;
+            color: white;
+            padding: 1.5rem 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(244, 67, 54, 0.4);
+            display: none;
+            z-index: 10000;
+            animation: slideIn 0.5s ease, shake 0.5s ease 0.5s;
+            max-width: 350px;
+        }
+
+        .motion-notification.show {
+            display: block;
+        }
+
+        .motion-notification-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .motion-notification-icon {
+            font-size: 2rem;
+            animation: pulse 1s infinite;
+        }
+
+        .motion-notification-time {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 0.5rem;
+        }
+
+        .motion-notification-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .motion-notification-close:hover {
+            opacity: 1;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Motion Alert Notification -->
+    <div id="motionNotification" class="motion-notification">
+        <button class="motion-notification-close" onclick="closeNotification()">×</button>
+        <div class="motion-notification-header">
+            <span class="motion-notification-icon">🚨</span>
+            <span>¡Movimiento Detectado!</span>
+        </div>
+        <div>Se ha detectado movimiento en la cámara</div>
+        <div class="motion-notification-time" id="alertTime"></div>
+    </div>
+
+    <!-- Alert Sound -->
+    <audio id="alertSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSx+zPLTgjMGHm7A7+OZURE=" type="audio/wav">
+    </audio>
+
+    <nav>
+        <div class="nav-container">
+            <div class="logo">🏠 Casa</div>
+            <ul class="nav-links">
+                <li><a href="/">Inicio</a></li>
+                <li><a href="/camaras" class="active">Cámaras</a></li>
+                <li><a href="/IA">IA</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1>📹 Sistema de Vigilancia</h1>
+            <p>Monitoreo en vivo de todas las cámaras</p>
+        </div>
+
+        <div class="camera-grid">
+            <!-- Camera 1 - Active -->
+            <div class="camera-card" onclick="openFullscreen('camera1')">
+                <div class="camera-header">
+                    <div class="camera-title">
+                        <span class="status-indicator"></span>
+                        📹 Cámara Principal
+                    </div>
+                    <div class="recording-indicator">
+                        <span class="recording-dot"></span>
+                        <span>EN VIVO</span>
+                    </div>
+                </div>
+                <div class="camera-view">
+                    <iframe src="http://192.168.1.143:8889/mystream" allow="autoplay; fullscreen"></iframe>
+                </div>
+                <div class="camera-controls">
+                    <button class="control-btn" onclick="event.stopPropagation(); refreshCamera('camera1')">🔄 Actualizar</button>
+                    <div class="stats">
+                        <span>📍 Entrada Principal</span>
+                        <span>🎥 1080p</span>
+                    </div>
+                    <button class="control-btn fullscreen-btn" onclick="event.stopPropagation(); openFullscreen('camera1')">⛶ Pantalla completa</button>
+                </div>
+            </div>
+
+            <!-- Camera 2 - IP Webcam Pro -->
+<div class="camera-card" onclick="openFullscreen('camera2')">
+    <div class="camera-header">
+        <div class="camera-title">
+            <span class="status-indicator"></span>
+            📹 Cámara 2
+        </div>
+        <div class="recording-indicator">
+            <span class="recording-dot"></span>
+            <span>EN VIVO</span>
+        </div>
+    </div>
+    <div class="camera-view">
+        <!-- Replace XXX with your phone's IP -->
+        <iframe src="http://192.168.1.193:8890/video" allow="autoplay; fullscreen"></iframe>
+    </div>
+    <div class="camera-controls">
+        <button class="control-btn" onclick="event.stopPropagation(); refreshCamera('camera2')">🔄 Actualizar</button>
+        <div class="stats">
+            <span>📍 Segunda Cámara</span>
+            <span>🎥 IP Webcam</span>
+        </div>
+        <button class="control-btn fullscreen-btn" onclick="event.stopPropagation(); openFullscreen('camera2')">⛶ Pantalla completa</button>
+    </div>
+</div>
+
+            <!-- Camera 3 - Placeholder -->
+            <div class="camera-card">
+                <div class="camera-header">
+                    <div class="camera-title">
+                        <span class="status-indicator offline"></span>
+                        📹 Cámara 3
+                    </div>
+                </div>
+                <div class="camera-view">
+                    <div class="camera-placeholder">
+                        <div class="camera-placeholder-icon">📷</div>
+                        <p>Cámara no configurada</p>
+                        <p style="font-size: 0.9rem; margin-top: 0.5rem; color: #555;">Agrega una cámara para ver su transmisión</p>
+                    </div>
+                </div>
+                <div class="camera-controls">
+                    <button class="control-btn" disabled>🔄 Actualizar</button>
+                    <div class="stats">
+                        <span>📍 Sin asignar</span>
+                    </div>
+                    <button class="control-btn fullscreen-btn" disabled>⛶ Pantalla completa</button>
+                </div>
+            </div>
+
+            <!-- Camera 4 - Placeholder -->
+            <div class="camera-card">
+                <div class="camera-header">
+                    <div class="camera-title">
+                        <span class="status-indicator offline"></span>
+                        📹 Cámara 4
+                    </div>
+                </div>
+                <div class="camera-view">
+                    <div class="camera-placeholder">
+                        <div class="camera-placeholder-icon">📷</div>
+                        <p>Cámara no configurada</p>
+                        <p style="font-size: 0.9rem; margin-top: 0.5rem; color: #555;">Agrega una cámara para ver su transmisión</p>
+                    </div>
+                </div>
+                <div class="camera-controls">
+                    <button class="control-btn" disabled>🔄 Actualizar</button>
+                    <div class="stats">
+                        <span>📍 Sin asignar</span>
+                    </div>
+                    <button class="control-btn fullscreen-btn" disabled>⛶ Pantalla completa</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function refreshCamera(cameraId) {
+            console.log('Refreshing', cameraId);
+            // Refresh iframe
+            const card = document.querySelector(`[onclick*="${cameraId}"]`);
+            const iframe = card.querySelector('iframe');
+            if (iframe) {
+                iframe.src = iframe.src;
+            }
+        }
+
+        function openFullscreen(cameraId) {
+            const card = document.querySelector(`[onclick*="${cameraId}"]`);
+            const iframe = card.querySelector('iframe');
+            if (iframe) {
+                if (iframe.requestFullscreen) {
+                    iframe.requestFullscreen();
+                } else if (iframe.webkitRequestFullscreen) {
+                    iframe.webkitRequestFullscreen();
+                } else if (iframe.msRequestFullscreen) {
+                    iframe.msRequestFullscreen();
+                }
+            }
+        }
+
+        // Motion detection alerts
+        let lastAlertTime = 0;
+        let notificationDismissed = false;
+        let lastShownAlert = 0;
+        const CHECK_INTERVAL = 1000;
+
+        async function checkMotionAlert() {
+            try {
+                const response = await fetch('/motion_alert.txt?t=' + Date.now());
+                if (response.ok) {
+                    const text = await response.text();
+                    const timestamp = parseFloat(text.trim());
+
+                    if (timestamp && timestamp > lastAlertTime) {
+                        const now = Date.now() / 1000;
+                        if (now - timestamp < 3 && timestamp !== lastShownAlert && !notificationDismissed) {
+                            showMotionAlert(timestamp);
+                            lastAlertTime = timestamp;
+                            lastShownAlert = timestamp;
+                        }
+                    }
+                }
+            } catch (error) {
+                // Silently ignore
+            }
+        }
+
+        function showMotionAlert(timestamp) {
+            const notification = document.getElementById('motionNotification');
+            const alertTime = document.getElementById('alertTime');
+            const alertSound = document.getElementById('alertSound');
+
+            const date = new Date(timestamp * 1000);
+            alertTime.textContent = date.toLocaleTimeString('es-ES');
+
+            notification.classList.add('show');
+
+            alertSound.currentTime = 0;
+            alertSound.play().catch(err => console.log('Audio play failed:', err));
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 10000);
+        }
+
+        function closeNotification() {
+            const notification = document.getElementById('motionNotification');
+            notification.classList.remove('show');
+            notificationDismissed = true;
+
+            setTimeout(() => {
+                notificationDismissed = false;
+            }, 30000);
+        }
+
+        setInterval(checkMotionAlert, CHECK_INTERVAL);
+        checkMotionAlert();
+    </script>
+</body>
+</html>
